@@ -25,8 +25,6 @@ namespace SmokeAndMirrors
 
         [Tooltip("Amount of charge in Baha Units™ used per second while the system is armed/pressurized.")]
         public float chargeDrainRatePerSecond;
-
-        public SmokeSystemParticles smokeSystemParticles;
 #pragma warning restore CS0649
 
         public event UnityAction<bool> OnSetState;

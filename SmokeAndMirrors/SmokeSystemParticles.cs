@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 using UnityEngine;
 
@@ -16,7 +15,7 @@ namespace SmokeAndMirrors
         [Header("Short Lasting, High Density Particles")]
         public ParticleSystem smokeParticlesShort;
 
-        [Tooltip("Number of particles to emit per knot of airspeed.")]
+        [Tooltip("Number of particles to emit per second per knot of airspeed.")]
         public float particlesPerKnotShort;
 
         [Tooltip("Minimum number of particles to emit per second.")]
@@ -28,7 +27,7 @@ namespace SmokeAndMirrors
         [Header("Long Lasting, Low Density Particles")]
         public ParticleSystem smokeParticlesLong;
 
-        [Tooltip("Number of particles to emit per knot of airspeed.")]
+        [Tooltip("Number of particles to emit per second per knot of airspeed.")]
         public float particlesPerKnotLong;
 
         [Tooltip("Minimum number of particles to emit per second.")]
@@ -59,8 +58,9 @@ namespace SmokeAndMirrors
                 return;
             }
 
-            // Align the particle system transform with the engine thrust transform
-            transform.rotation = Engine.thrustTransform.rotation;
+            // Align the particle system transforms with the engine thrust transform
+            smokeParticlesShort.transform.rotation = Engine.thrustTransform.rotation;
+            smokeParticlesLong.transform.rotation = Engine.thrustTransform.rotation;
 
             // Start the particle systems when the smoke system and engine are on, and the engine is not in afterburner
             if (!areParticleSystemsPlaying && smokeSystem.IsSmokeOn && Engine.startedUp && !Engine.afterburner)
@@ -82,7 +82,7 @@ namespace SmokeAndMirrors
             {
                 float knots = MeasurementManager.SpeedToKnot(FlightInfo.airspeed);
 
-                float emissionRateShort = Mathf.Clamp(knots * particlesPerKnotShort, minRateShort, minRateShort);
+                float emissionRateShort = Mathf.Clamp(knots * particlesPerKnotShort, minRateShort, maxRateShort);
                 var emissionShort = smokeParticlesShort.emission;
                 emissionShort.rateOverTime = emissionRateShort;
 
@@ -113,7 +113,6 @@ namespace SmokeAndMirrors
                 Main.Log("Loading AIM-120 smoke trail material");
 
                 var aim120 = VTResources.Load<GameObject>("weapons/missiles/AIM-120");
-                Main.Log(aim120);
 
                 try
                 {
