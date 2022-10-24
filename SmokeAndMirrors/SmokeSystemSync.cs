@@ -62,11 +62,11 @@ namespace SmokeAndMirrors
             {
                 if (target == 0uL)
                 {
-                    SendRPC("RPC_Smoke", smokeSystem.IsSmokeOn);
+                    SendRPC("RPC_Smoke", smokeSystem.IsSmokeOn ? 1 : 0);
                 }
                 else
                 {
-                    SendDirectedRPC(target, "RPC_Smoke", smokeSystem.IsSmokeOn);
+                    SendDirectedRPC(target, "RPC_Smoke", smokeSystem.IsSmokeOn ? 1 : 0);
                 }
             }
         }
