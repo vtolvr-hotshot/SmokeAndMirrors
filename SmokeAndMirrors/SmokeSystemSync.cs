@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Steamworks;
+
+using UnityEngine;
 
 using VTNetworking;
 
@@ -23,18 +25,50 @@ namespace SmokeAndMirrors
         {
             base.OnNetInitialized();
 
-            if (isMine && smokeSystem != null)
+            if (isMine)
             {
                 smokeSystem.OnSetState += SmokeSystem_OnSetSmoke;
+                Refresh();
+                VTNetworkManager.instance.OnNewClientConnected += Instance_OnNewClientConnected;
             }
-
-            if (!isMine)
+            else
             {
                 hPEquipSmokeSystem.IsRemote = true;
                 smokeSystem.IsRemote = true;
             }
 
             Main.Log("SmokeSystemSync.OnNetInitialized");
+        }
+
+        private void OnDestroy()
+        {
+            if (VTNetworkManager.hasInstance)
+            {
+                VTNetworkManager.instance.OnNewClientConnected -= Instance_OnNewClientConnected;
+            }
+        }
+
+        private void Instance_OnNewClientConnected(SteamId obj)
+        {
+            if (isMine)
+            {
+                Refresh(obj.Value);
+            }
+        }
+
+        private void Refresh(ulong target = 0uL)
+        {
+            if (isMine)
+            {
+                if (target == 0uL)
+                {
+                    SendRPC("RPC_Smoke", smokeSystem.IsSmokeOn);
+                }
+                else
+                {
+                    SendDirectedRPC(target, "RPC_Smoke", smokeSystem.IsSmokeOn);
+                }
+            }
         }
 
         private void SmokeSystem_OnSetSmoke(bool isSmokeOn)
