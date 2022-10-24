@@ -6,6 +6,7 @@ using System.Reflection;
 using Harmony;
 
 using UnityEngine;
+using UnityEngine.Events;
 
 using VTNetworking;
 
@@ -13,12 +14,15 @@ namespace SmokeAndMirrors
 {
     public class Main : VTOLMOD
     {
-        public static bool sideMirrorsEnabled = true;
-
-        public static Dictionary<string, GameObject> Prefabs { get; private set; }
+        public static bool SideMirrorsEnabled { get; private set; } = true;
+        public static Dictionary<string, GameObject> Prefabs { get; private set; } = new Dictionary<string, GameObject>();
 
         private static VTOLMOD instance;
 
+        private event UnityAction OnAssetsLoaded;
+
+        // Static logging methods for convenience. Calls the VTOLMOD logging functions,
+        // which prefix the log message with the mod name.
         public static new void Log(object message)
         {
             instance.Log(message);
@@ -50,6 +54,8 @@ namespace SmokeAndMirrors
             base.ModLoaded();
 
             VTOLAPI.CreateSettingsMenu(CreateSettings());
+            OnAssetsLoaded += RegisterHPEquippable;
+            OnAssetsLoaded += ModifyVehiclePrefab;
             StartCoroutine(LoadAssetBundleAsync());
         }
 
@@ -58,11 +64,47 @@ namespace SmokeAndMirrors
             Settings settings = new Settings(this);
             settings.CreateCustomLabel("AirshowModSettings");
 
-            settings.CreateBoolSetting("Enable side mirrors?", SetSideMirrorsEnabled, sideMirrorsEnabled);
+            settings.CreateBoolSetting("Enable side mirrors?", SetSideMirrorsEnabled, SideMirrorsEnabled);
 
             return settings;
 
-            void SetSideMirrorsEnabled(bool value) { sideMirrorsEnabled = value; }
+            void SetSideMirrorsEnabled(bool value) { SideMirrorsEnabled = value; }
+        }
+
+        private void RegisterHPEquippable()
+        {
+            string assetName = "fa26_smokeSystem";
+
+            if (Prefabs.TryGetValue(assetName, out var prefab))
+            {
+                string resourcePath = $"HPEquips/AFighter/{assetName}";
+                VTResources.RegisterOverriddenResource(resourcePath, prefab);
+                VTNetworkManager.RegisterOverrideResource(resourcePath, prefab);
+            }
+        }
+
+        private void ModifyVehiclePrefab()
+        {
+            string resourcePath = "vehicles/FA-26B";
+            var fa26bPrefab = VTResources.Load<GameObject>(resourcePath);
+
+            if (fa26bPrefab == null)
+            {
+                return;
+            }
+
+            bool prefabWasModified = false;
+
+            if (SideMirrorsEnabled)
+            {
+                fa26bPrefab.AddComponent<SideMirrorLoader>();
+                prefabWasModified = true;
+            }
+
+            if (prefabWasModified)
+            {
+                VTResources.RegisterOverriddenResource(resourcePath, fa26bPrefab);
+            }
         }
 
         private IEnumerator LoadAssetBundleAsync()
@@ -83,8 +125,6 @@ namespace SmokeAndMirrors
 
             // Define the prefabs to be loaded
             string[] assetNames = new string[] { "fa26_smokeSystem", "SmokeIndicator", "SmokePanel", "SideMirror" };
-            Prefabs = new Dictionary<string, GameObject>();
-
             foreach (string assetName in assetNames)
             {
                 Log($"Loading {assetName} prefab");
@@ -104,15 +144,9 @@ namespace SmokeAndMirrors
                 DontDestroyOnLoad(prefab);
                 prefab.SetActive(false);
                 Prefabs.Add(assetName, prefab);
-
-                // Register the equippable prefab
-                if (assetName.Equals("fa26_smokeSystem"))
-                {
-                    string resourcePath = $"HPEquips/AFighter/{assetName}";
-                    VTResources.RegisterOverriddenResource(resourcePath, prefab);
-                    VTNetworkManager.RegisterOverrideResource(resourcePath, prefab);
-                }
             }
+
+            if (OnAssetsLoaded != null) OnAssetsLoaded();
 
             yield break;
         }

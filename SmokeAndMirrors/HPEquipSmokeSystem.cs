@@ -21,8 +21,6 @@ namespace SmokeAndMirrors
         private SmokeIndicator smokeIndicator;
         private SmokePanel smokePanel;
         private Transform countermeasuresPanel;
-        private SideMirror leftMirror;
-        private SideMirror rightMirror;
 
         public bool IsRemote { get; set; }
 
@@ -103,9 +101,6 @@ namespace SmokeAndMirrors
                     InstantiateSmokeIndicator();
                     InstantiateSmokePanel();
                     smokeSystem.battery = weaponManager.transform.GetComponentInChildren<Battery>();
-
-                    // Setup additional modifications
-                    InstantiateSideMirrors();
                 }
             }
             catch (NullReferenceException)
@@ -120,6 +115,8 @@ namespace SmokeAndMirrors
             {
                 return;
             }
+
+            Main.Log("Instantiating smoke indicator");
 
             try
             {
@@ -155,6 +152,8 @@ namespace SmokeAndMirrors
             {
                 return;
             }
+
+            Main.Log("Instantiating smoke panel");
 
             try
             {
@@ -207,9 +206,6 @@ namespace SmokeAndMirrors
             smokePanel.gameObject.SetActive(true);
             countermeasuresPanel.gameObject.SetActive(false);
 
-            // Activate additional modifications
-            EnableSideMirrors();
-
             // Flag to prevent disable method from running before enable
             hasSmokeSystemBeenEnabled = true;
         }
@@ -237,76 +233,6 @@ namespace SmokeAndMirrors
             smokeIndicator.gameObject.SetActive(false);
             smokePanel.gameObject.SetActive(false);
             countermeasuresPanel.gameObject.SetActive(true);
-
-            // Deactivate additional modifications
-            DisableSideMirrors();
-        }
-
-        private void InstantiateSideMirrors()
-        {
-            if (!Main.sideMirrorsEnabled || leftMirror != null || rightMirror != null)
-            {
-                return;
-            }
-
-            // Define the local position and rotation for the side mirrors
-            var leftPosition = new Vector3(0.004662f, 0.035816f, 0.010366f);
-            var leftRotation = Quaternion.Euler(6.003f, 58.425f, 0.985f);
-            var rightPosition = new Vector3(-0.004662f, 0.035816f, 0.010366f);
-            var rightRotation = Quaternion.Euler(6.003f, -58.425f, 0.985f);
-
-            try
-            {
-                // Get references to the canopy frame and existing mirror
-                var canopyFrame = weaponManager.transform.Find("aFighter2/Canopy/canopyParent/canopy/canopyFrame");
-                var topMirror = canopyFrame.Find("canopyFrame.001");
-
-                // Instantiate the side mirrors
-                if (Main.Prefabs.TryGetValue("SideMirror", out var sideMirrorPrefab))
-                {
-                    var leftMirrorObj = Instantiate(sideMirrorPrefab, canopyFrame);
-                    leftMirrorObj.transform.localPosition = leftPosition;
-                    leftMirrorObj.transform.localRotation = leftRotation;
-                    leftMirrorObj.transform.localScale = Vector3.one;
-
-                    leftMirror = leftMirrorObj.GetComponent<SideMirror>();
-                    leftMirror.TopMirror = topMirror;
-
-                    var rightMirrorObj = Instantiate(sideMirrorPrefab, canopyFrame);
-                    rightMirrorObj.transform.localPosition = rightPosition;
-                    rightMirrorObj.transform.localRotation = rightRotation;
-                    rightMirrorObj.transform.localScale = Vector3.one;
-
-                    rightMirror = rightMirrorObj.GetComponent<SideMirror>();
-                    rightMirror.TopMirror = topMirror;
-                }
-                else
-                {
-                    Main.LogError("Could not find SideMirror prefab!");
-                }
-            }
-            catch (NullReferenceException)
-            {
-                Main.LogError("Could not initialize side mirrors!");
-            }
-        }
-
-        private void EnableSideMirrors()
-        {
-            if (leftMirror != null && rightMirror != null)
-            {
-                leftMirror.gameObject.SetActive(true);
-                rightMirror.gameObject.SetActive(true);
-            }
-        }
-
-        private void DisableSideMirrors()
-        {
-            if (leftMirror != null && rightMirror != null)
-            {
-                leftMirror.gameObject.SetActive(false);
-                rightMirror.gameObject.SetActive(false);
-            }
         }
     }
 }
