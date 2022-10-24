@@ -1,4 +1,5 @@
 # ***Requires VTOL VR version 1.5 (public testing branch)!!!***
+[Mod page](https://vtolvr-mods.com/mod/kobuhssm/)
 ### Smoke System
 A smoke system that can be equipped to the gun slot.
 
