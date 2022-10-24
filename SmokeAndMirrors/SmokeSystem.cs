@@ -5,7 +5,7 @@ namespace SmokeAndMirrors
 {
     [RequireComponent(typeof(HPEquipSmokeSystem))]
     [DisallowMultipleComponent]
-    class SmokeSystem : ElectronicComponent, IMassObject
+    class SmokeSystem : MonoBehaviour, IMassObject
     {
 #pragma warning disable CS0649
         [Tooltip("Number of liters that a newly-equipped system should start with.")]
@@ -40,6 +40,7 @@ namespace SmokeAndMirrors
         public bool IsRemote { get; set; }
         public bool IsSmokeArmed { get; private set; }
         public bool IsSmokeOn { get; private set; }
+        public Battery Battery { get; set; }
 
         public float CurrentOil
         {
@@ -73,7 +74,7 @@ namespace SmokeAndMirrors
             }
 
             // Set armed state
-            if (isSmokeArmSwitchOn && battery != null && DrainElectricity(chargeDrainRatePerSecond * Time.deltaTime))
+            if (isSmokeArmSwitchOn && Battery != null && Battery.Drain(chargeDrainRatePerSecond * Time.deltaTime))
             {
                 IsSmokeArmed = true;
                 if (OnSetArmed != null) OnSetArmed(IsSmokeArmed);

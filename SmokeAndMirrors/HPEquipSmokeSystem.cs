@@ -100,7 +100,7 @@ namespace SmokeAndMirrors
                     countermeasuresPanel = weaponManager.transform.Find("Local/DashCanvas/LeftDash/Countermeasures");
                     InstantiateSmokeIndicator();
                     InstantiateSmokePanel();
-                    smokeSystem.battery = weaponManager.transform.GetComponentInChildren<Battery>();
+                    smokeSystem.Battery = weaponManager.transform.GetComponentInChildren<Battery>();
                 }
             }
             catch (NullReferenceException)
