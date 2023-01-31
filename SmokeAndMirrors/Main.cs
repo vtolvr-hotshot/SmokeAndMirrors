@@ -15,6 +15,7 @@ namespace SmokeAndMirrors
     public class Main : VTOLMOD
     {
         public static bool SideMirrorsEnabled { get; private set; } = true;
+        public static bool StopwatchEnabled { get; private set; } = true;
         public static Dictionary<string, GameObject> Prefabs { get; private set; } = new Dictionary<string, GameObject>();
 
         private static VTOLMOD instance;
@@ -35,7 +36,8 @@ namespace SmokeAndMirrors
                 "fa26_smokeSystemBlue",
                 "SmokeIndicator",
                 "SmokePanel",
-                "SideMirror"
+                "SideMirror",
+                "Stopwatch"
         };
 
         // Static logging methods for convenience. Calls the VTOLMOD logging functions,
@@ -87,6 +89,12 @@ namespace SmokeAndMirrors
                 SideMirrorsEnabled
                 );
 
+            settings.CreateBoolSetting(
+                "Enable stopwatch?",
+                value => { StopwatchEnabled = value; },
+                StopwatchEnabled
+                );
+            
             return settings;
         }
 
@@ -98,10 +106,10 @@ namespace SmokeAndMirrors
                 if (Prefabs.TryGetValue(resourceName, out var prefab))
                 {
                     string resourcePath = $"HPEquips/AFighter/{resourceName}";
-                VTResources.RegisterOverriddenResource(resourcePath, prefab);
-                VTNetworkManager.RegisterOverrideResource(resourcePath, prefab);
+                    VTResources.RegisterOverriddenResource(resourcePath, prefab);
+                    VTNetworkManager.RegisterOverrideResource(resourcePath, prefab);
+                }
             }
-        }
         }
 
         private void ModifyVehiclePrefab()
@@ -119,6 +127,12 @@ namespace SmokeAndMirrors
             if (SideMirrorsEnabled)
             {
                 fa26bPrefab.AddComponent<SideMirrorLoader>();
+                prefabWasModified = true;
+            }
+
+            if (StopwatchEnabled)
+            {
+                fa26bPrefab.AddComponent<StopwatchLoader>();
                 prefabWasModified = true;
             }
 
