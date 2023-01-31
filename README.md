@@ -1,5 +1,3 @@
-<img src="https://media.vtolvr-mods.com/uploaded_mod_images/smokecolorseIurUlY7vv.png" width="100%" />
-
 [Mod page](https://vtolvr-mods.com/mod/kobuhssm/)
 ### Smoke System
 A smoke system that can be equipped to the gun slot.
