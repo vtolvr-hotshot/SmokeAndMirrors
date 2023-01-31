@@ -25,23 +25,24 @@ namespace SmokeAndMirrors.Patches
             Dictionary<string, EqInfo> unlockedWeaponPrefabs =
                 traverse.Field("unlockedWeaponPrefabs").GetValue<Dictionary<string, EqInfo>>();
 
-            string resourceName = "fa26_smokeSystem";
-
-            // Add the smoke system to the F/A-26B configurator
-            if (PilotSaveManager.currentVehicle.vehicleName.Equals("F/A-26B") &&
-                Main.Prefabs.TryGetValue(resourceName, out var smokeSystemPrefab))
+            foreach (string resourceName in Main.resourceNames)
             {
-                Main.Log("Adding smoke system to configurator");
-                GameObject weaponPrefab = Object.Instantiate(smokeSystemPrefab);
-                weaponPrefab.name = resourceName;
-                EqInfo weaponInfo = new EqInfo(
-                    weaponPrefab,
-                    $"{PilotSaveManager.currentVehicle.equipsResourcePath}/{resourceName}"
-                    );
-                weaponPrefab.SetActive(false);
+                // Add the smoke system to the F/A-26B configurator
+                if (PilotSaveManager.currentVehicle.vehicleName.Equals("F/A-26B") &&
+                    Main.Prefabs.TryGetValue(resourceName, out var smokeSystemPrefab))
+                {
+                    Main.Log($"Adding {resourceName} to configurator");
+                    GameObject weaponPrefab = Object.Instantiate(smokeSystemPrefab);
+                    weaponPrefab.name = resourceName;
+                    EqInfo weaponInfo = new EqInfo(
+                        weaponPrefab,
+                        $"{PilotSaveManager.currentVehicle.equipsResourcePath}/{resourceName}"
+                        );
+                    weaponPrefab.SetActive(false);
 
-                unlockedWeaponPrefabs.Add(resourceName, weaponInfo);
-                __instance.availableEquipStrings.Add(resourceName);
+                    unlockedWeaponPrefabs.Add(resourceName, weaponInfo);
+                    __instance.availableEquipStrings.Add(resourceName);
+                }
             }
 
             traverse.Field("unlockedWeaponPrefabs").SetValue(unlockedWeaponPrefabs);
@@ -55,7 +56,7 @@ namespace SmokeAndMirrors.Patches
     {
         static bool Prefix(LoadoutConfigurator __instance, string weaponName, int hpIdx)
         {
-            if (weaponName.Equals("fa26_smokeSystem") && __instance != null)
+            if (Main.resourceNames.Contains(weaponName) && __instance != null)
             {
                 AttachImmediateCustom(__instance, weaponName, hpIdx);
                 return false;

@@ -21,6 +21,23 @@ namespace SmokeAndMirrors
 
         private event UnityAction OnAssetsLoaded;
 
+        public static string[] resourceNames = new string[] {
+                "fa26_smokeSystemWhite",
+                "fa26_smokeSystemRed",
+                "fa26_smokeSystemGreen",
+                "fa26_smokeSystemBlue"
+        };
+
+        private static string[] assetNames = new string[] {
+                "fa26_smokeSystemWhite",
+                "fa26_smokeSystemRed",
+                "fa26_smokeSystemGreen",
+                "fa26_smokeSystemBlue",
+                "SmokeIndicator",
+                "SmokePanel",
+                "SideMirror"
+        };
+
         // Static logging methods for convenience. Calls the VTOLMOD logging functions,
         // which prefix the log message with the mod name.
         public static new void Log(object message)
@@ -64,23 +81,27 @@ namespace SmokeAndMirrors
             Settings settings = new Settings(this);
             settings.CreateCustomLabel("AirshowModSettings");
 
-            settings.CreateBoolSetting("Enable side mirrors?", SetSideMirrorsEnabled, SideMirrorsEnabled);
+            settings.CreateBoolSetting(
+                "Enable side mirrors?",
+                value => { SideMirrorsEnabled = value; },
+                SideMirrorsEnabled
+                );
 
             return settings;
-
-            void SetSideMirrorsEnabled(bool value) { SideMirrorsEnabled = value; }
         }
 
         private void RegisterHPEquippable()
         {
-            string assetName = "fa26_smokeSystem";
 
-            if (Prefabs.TryGetValue(assetName, out var prefab))
+            foreach (string resourceName in resourceNames)
             {
-                string resourcePath = $"HPEquips/AFighter/{assetName}";
+                if (Prefabs.TryGetValue(resourceName, out var prefab))
+                {
+                    string resourcePath = $"HPEquips/AFighter/{resourceName}";
                 VTResources.RegisterOverriddenResource(resourcePath, prefab);
                 VTNetworkManager.RegisterOverrideResource(resourcePath, prefab);
             }
+        }
         }
 
         private void ModifyVehiclePrefab()
@@ -123,8 +144,6 @@ namespace SmokeAndMirrors
                 yield break;
             }
 
-            // Define the prefabs to be loaded
-            string[] assetNames = new string[] { "fa26_smokeSystem", "SmokeIndicator", "SmokePanel", "SideMirror" };
             foreach (string assetName in assetNames)
             {
                 Log($"Loading {assetName} prefab");
@@ -135,7 +154,7 @@ namespace SmokeAndMirrors
 
                 if (request.asset == null)
                 {
-                    LogError($"Could not load {assetName} asset");
+                    LogError($"Could not load {assetName} prefab");
                     continue;
                 }
 

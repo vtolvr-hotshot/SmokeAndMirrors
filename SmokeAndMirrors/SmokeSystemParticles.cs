@@ -7,10 +7,14 @@ namespace SmokeAndMirrors
     [DisallowMultipleComponent]
     class SmokeSystemParticles : MonoBehaviour
     {
-        private static Material smokeMaterial;
+        private static Material missileSmokeMaterial;
+        private Material smokeMaterial;
 
 #pragma warning disable CS0649
         public SmokeSystem smokeSystem;
+
+        [Tooltip("Color of the emitted smoke.")]
+        public Color color;
 
         [Header("Short Lasting, High Density Particles")]
         public ParticleSystem smokeParticlesShort;
@@ -48,7 +52,12 @@ namespace SmokeAndMirrors
         {
             shortRenderer = smokeParticlesShort.GetComponent<ParticleSystemRenderer>();
             longRenderer = smokeParticlesLong.GetComponent<ParticleSystemRenderer>();
-            UpdateMaterial();
+            CreateAndSetMaterial();
+        }
+
+        private void OnDestroy()
+        {
+            Destroy(smokeMaterial);
         }
 
         private void Update()
@@ -106,9 +115,9 @@ namespace SmokeAndMirrors
             areParticleSystemsPlaying = false;
         }
 
-        private void UpdateMaterial()
+        private void CreateAndSetMaterial()
         {
-            if (smokeMaterial == null)
+            if (missileSmokeMaterial == null)
             {
                 Main.Log("Loading AIM-120 smoke trail material");
 
@@ -118,13 +127,16 @@ namespace SmokeAndMirrors
                 {
                     var missileTrail = aim120.transform.Find("exhaustTransform/MissileTrail");
                     var missileParticleSystemRenderer = missileTrail.GetComponent<ParticleSystemRenderer>();
-                    smokeMaterial = new Material(missileParticleSystemRenderer.material);
+                    missileSmokeMaterial = missileParticleSystemRenderer.sharedMaterial;
                 }
                 catch (NullReferenceException)
                 {
                     Main.LogError("Could not load AIM-120 particle material!");
                 }
             }
+
+            smokeMaterial = new Material(missileSmokeMaterial);
+            smokeMaterial.SetColor("_TintColor", color);
 
             shortRenderer.material = smokeMaterial;
             longRenderer.material = smokeMaterial;
