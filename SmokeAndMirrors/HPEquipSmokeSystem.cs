@@ -47,9 +47,14 @@ namespace SmokeAndMirrors
             }
         }
 
-        public override float GetTotalCost()
+        public override float GetCurrentPrice()
         {
             return unitCost + perQuantityCost * smokeSystem.CurrentOil;
+        }
+
+        public override float GetNewItemCost()
+        {
+            return unitCost + perQuantityCost * smokeSystem.startingOil;
         }
 
         public override int GetCount()
